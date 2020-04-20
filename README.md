@@ -4,6 +4,7 @@
 * 输入账号密码一键完成课程
 * 可以自行选择课程
 * 正确率显示为100%
+* 已完成的章节会自动跳过
 
 ![image](https://raw.githubusercontent.com/Avenshy/WELearnToSleep/master/preview1.png)
 ![image](https://raw.githubusercontent.com/Avenshy/WELearnToSleep/master/preview2.png)
