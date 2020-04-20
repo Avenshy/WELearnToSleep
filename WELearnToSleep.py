@@ -34,7 +34,6 @@ url='https://welearn.sflep.com/2019/student/course_info.aspx?cid='+cid
 req=session.get(url)
 uid=req.text[req.text.find('"uid":')+6:req.text.find('"',req.text.find('"uid":')+7)-2]
 classid=req.text[req.text.find('classid=')+8:req.text.find('&',req.text.find('classid=')+9)]
-
 i=0
 url='https://welearn.sflep.com/ajax/StudyStat.aspx?action=scoLeaves&cid='+cid+'&uid='+uid+'&unitidx='+str(i)+'&classid='+classid
 req=session.get(url,headers={'Referer':'https://welearn.sflep.com/2019/student/course_info.aspx?cid='+cid})
@@ -45,11 +44,13 @@ while '异常' not in req.text and '出错了' not in req.text:
         if('未' in x['iscomplete']):
             print(x['location']+'...',end='')
             url='https://welearn.sflep.com/Ajax/SCO.aspx'
+            req=session.post(url,data={'action':'startsco160928','cid':cid,'scoid':id,'uid':uid})
+            url='https://welearn.sflep.com/Ajax/SCO.aspx'
             req=session.post(url,data={'action':'savescoinfo160928','cid':cid,'scoid':id,'uid':uid,'progress':'100','crate':'100','status':'unknown','cstatus':'completed','trycount':'100'},headers={'Referer':'https://welearn.sflep.com/Student/StudyCourse.aspx'})
             if('"ret":0' in req.text):
                 print('Success!!')
             else:
-                print('Fail!!')
+                print('Fail!!'+req.text)
         else:
             print(x['location']+'   '+x['iscomplete'])
     i+=1
