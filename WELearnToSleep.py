@@ -1,6 +1,6 @@
 import requests
 import json
-print('**********  Created By Avenshy  **********\nVersion:0.2dev\n')
+print('**********  Created By Avenshy  **********\n Version:0.2dev\n')
 session = requests.Session()
 username = input('Username: ')
 password = input('Password: ')
@@ -21,7 +21,7 @@ i = 1
 for x in back:
     print('[id:' + str(i) + ']   完成度' + str(x['per']) + '%  ' + x['name'])
     i+=1
-i = int(input('\n请输入需要完成的课程id: '))
+i = int(input('\n请输入需要完成的课程id（id为上方[]内的序号）: '))
 print('Running...')
 cid = str(back[i - 1]['cid'])
 url = 'https://welearn.sflep.com/2019/student/course_info.aspx?cid=' + cid
