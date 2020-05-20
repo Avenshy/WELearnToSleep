@@ -1,69 +1,122 @@
 import requests
-import json
-print('**********  Created By Avenshy  **********\n Version:0.2dev\n')
+import re
+import sys
+
+print("**********  Created By Avenshy & SSmJaE  **********")
+print("                 Version:0.3dev")
+print("***************************************************\n")
+
+# 获取账户密码
+try:  # 直接从命令行中获取
+    username, password = sys.argv[1], sys.argv[2]
+except:
+    username = input('Username: ')
+    password = input('Password: ')
+print("Login...")
+
+# 登录模块
 session = requests.Session()
-username = input('Username: ')
-password = input('Password: ')
-print('Login...',end=' ')
-url = 'https://sso.sflep.com/cas/login?service=http%3a%2f%2fwelearn.sflep.com%2f2019%2fuser%2floginredirect.aspx'
-req = session.get(url)
-lt = req.text[req.text.find('name="lt" value="') + 17:req.text.find('name="lt" value="') + 17 + 76]
-url = 'https://sso.sflep.com/cas/login?service=http%3a%2f%2fwelearn.sflep.com%2f2019%2fuser%2floginredirect.aspx'
-req = session.post(url,data={'username':username,'password':password,'lt':lt,'_eventId':'submit','submit':'LOGIN'})
-if('请登录' in req.text):
-    print('Fail!!')
+loginUrl = "https://sso.sflep.com/cas/login?service=http%3a%2f%2fwelearn.sflep.com%2f2019%2fuser%2floginredirect.aspx"
+response = session.get(loginUrl)
+lt = re.search('name="lt" value="(.*?)"', response.text).group(1)
+response = session.post(loginUrl, data={"username": username,
+                                        "password": password,
+                                        "lt": lt,
+                                        "_eventId": "submit",
+                                        "submit": "LOGIN"})
+if "请登录" in response.text:
+    print("Login Failed!!")
     exit(0)
-print('Success!!',end='\n\n')
-url = 'https://welearn.sflep.com/ajax/authCourse.aspx?action=gmc'
-req = session.get(url,headers={'Referer':'https://welearn.sflep.com/2019/student/index.aspx'})
-back = json.loads(req.text)['clist']
-i = 1
-for x in back:
-    print('[id:' + str(i) + ']   完成度' + str(x['per']) + '%  ' + x['name'])
-    i+=1
-i = int(input('\n请输入需要完成的课程id（id为上方[]内的序号）: '))
-print('Running...')
-cid = str(back[i - 1]['cid'])
-url = 'https://welearn.sflep.com/2019/student/course_info.aspx?cid=' + cid
-req = session.get(url)
-uid = req.text[req.text.find('"uid":') + 6:req.text.find('"',req.text.find('"uid":') + 7) - 2]
-classid = req.text[req.text.find('classid=') + 8:req.text.find('&',req.text.find('classid=') + 9)]
-i = 0
-way1su, way2su, way1fa, way2fa = 0, 0, 0, 0
+else:
+    print("Login Success!!", end="\n\n")
+
+# 查询课程信息
+url = "https://welearn.sflep.com/ajax/authCourse.aspx?action=gmc"
+response = session.get(
+    url, headers={"Referer": "https://welearn.sflep.com/2019/student/index.aspx"})
+back = response.json()["clist"]
+for i, course in enumerate(back, start=1):
+    print(f'[NO.{i:>2}] 完成度{course["per"]:>3}% {course["name"]}')
+
+# 选择课程
+order = int(input("\n请输入需要完成的课程序号（上方[]内的数字）: "))
+cid = back[order - 1]["cid"]
+print("Running...")
+
+# 刷课模块
+url = f"https://welearn.sflep.com/2019/student/course_info.aspx?cid={cid}"
+response = session.get(url)
+
+uid = re.search('"uid":(.*?),', response.text).group(1)
+classid = re.search('"classid":"(.*?)"', response.text).group(1)
+
+# 伪造请求
+way1Succeed, way2Succeed, way1Failed, way2Failed = 0, 0, 0, 0
 data = '{"cmi":{"completion_status":"completed","interactions":[],"launch_data":"","progress_measure":"1","score":{"scaled":"100","raw":"100"},"session_time":"0","success_status":"unknown","total_time":"0","mode":"normal"},"adl":{"data":[]},"cci":{"data":[],"service":{"dictionary":{"headword":"","short_cuts":""},"new_words":[],"notes":[],"writing_marking":[],"record":{"files":[]},"play":{"offline_media_id":"9999"}},"retry_count":"0","submit_time":""}}[INTERACTIONINFO]'
-url = 'https://welearn.sflep.com/ajax/StudyStat.aspx?action=scoLeaves&cid=' + cid + '&uid=' + uid + '&unitidx=' + str(i) + '&classid=' + classid
-req = session.get(url,headers={'Referer':'https://welearn.sflep.com/2019/student/course_info.aspx?cid=' + cid})
-while '异常' not in req.text and '出错了' not in req.text:
-    back = json.loads(req.text)['info']
-    for x in back:
-        id = x['id'] 
-        if('未' in x['iscomplete']):
-            print(x['location'] + '...',end='')
-            url = 'https://welearn.sflep.com/Ajax/SCO.aspx'
-            req = session.post(url,data={'action':'startsco160928','cid':cid,'scoid':id,'uid':uid,'nocache':'0.0429450926459094'},headers={'Referer':'https://welearn.sflep.com/Student/StudyCourse.aspx?cid={}&classid={}&sco={}'.format(cid, classid, id)})
-            req = session.post(url,data={'action':'setscoinfo','cid':cid,'scoid':id,'uid':uid,'data':data,'isend':'False'},headers={'Referer':'https://welearn.sflep.com/Student/StudyCourse.aspx?cid={}&classid={}&sco={}'.format(cid, classid, id)})
-            if('"ret":0' in req.text):
-                print('Way1:Success!!!',end='')
-                way1su += 1
+
+ajaxUrl = "https://welearn.sflep.com/Ajax/SCO.aspx"
+infoHeaders = {
+    "Referer": f"https://welearn.sflep.com/2019/student/course_info.aspx?cid={cid}",
+}
+i = 0
+while True:
+    response = session.get(
+        f'https://welearn.sflep.com/ajax/StudyStat.aspx?action=scoLeaves&cid={cid}&uid={uid}&unitidx={i}&classid={classid}', headers=infoHeaders)
+
+    if "异常" in response.text or "出错了" in response.text:
+        break
+
+    for course in response.json()["info"]:
+        if "未" in course["iscomplete"]:  # 章节未完成
+            print(f'[未完成]    {course["location"]}')
+            id = course["id"]
+            session.post(ajaxUrl, data={"action": "startsco160928",
+                                        "cid": cid,
+                                        "scoid": id,
+                                        "uid": uid,
+                                        "nocache": "0.0429450926459094",
+                                        },
+                         headers={"Referer": f"https://welearn.sflep.com/Student/StudyCourse.aspx?cid={cid}&classid={classid}&sco={id}"})
+            response = session.post(ajaxUrl, data={"action": "setscoinfo",
+                                                   "cid": cid,
+                                                   "scoid": id,
+                                                   "uid": uid,
+                                                   "data": data,
+                                                   "isend": "False", },
+                                    headers={"Referer": f"https://welearn.sflep.com/Student/StudyCourse.aspx?cid={cid}&classid={classid}&sco={id}"})
+            if '"ret":0' in response.text:
+                print("[已模拟]    Way1:Success!!!", end="  ")
+                way1Succeed += 1
             else:
-                print('Way1:Fail!!!',end='')
-                way1fa += 1
-            url = 'https://welearn.sflep.com/Ajax/SCO.aspx'
-            req = session.post(url,data={'action':'savescoinfo160928','cid':cid,'scoid':id,'uid':uid,'progress':'100','crate':'100','status':'unknown','cstatus':'completed','trycount':'0'},headers={'Referer':'https://welearn.sflep.com/Student/StudyCourse.aspx?cid={}&classid={}&sco={}'.format(cid, classid, id)})
-            if('"ret":0' in req.text):
-                print('Way2:Success!!!')
-                way2su += 1
+                print("[已模拟]    Way1:Failed !!!", end="  ")
+                way1Failed += 1
+
+            response = session.post(ajaxUrl, data={"action": "savescoinfo160928",
+                                                   "cid": cid,
+                                                   "scoid": id,
+                                                   "uid": uid,
+                                                   "progress": "100",
+                                                   "crate": "100",
+                                                   "status": "unknown",
+                                                   "cstatus": "completed",
+                                                   "trycount": "0",
+                                                   },
+                                    headers={"Referer": f"https://welearn.sflep.com/Student/StudyCourse.aspx?cid={cid}&classid={classid}&sco={id}"})
+            if '"ret":0' in response.text:
+                print("Way2:Success!!!")
+                way2Succeed += 1
             else:
-                print('Way2:Fail!!!')
-                way2fa += 1
-        else:
-            print(x['location'] + '   ' + x['iscomplete'])
-    i+=1
-    url = 'https://welearn.sflep.com/ajax/StudyStat.aspx?action=scoLeaves&cid=' + cid + '&uid=' + uid + '&unitidx=' + str(i) + '&classid=' + classid
-    req = session.get(url,headers={'Referer':'https://welearn.sflep.com/2019/student/course_info.aspx?cid=' + cid})
-print('Finish!!\n')
-print('Total counts:\n')
-print('way1: {} succeeded, {} failed'.format(way1su, way1fa))
-print('way2: {} succeeded, {} failed'.format(way2su, way2fa))
-print("\n\n\n**********  Created By Avenshy  **********\n\n\n")
+                print("Way2:Fail   !!!")
+                way2Failed += 1
+        else:  # 章节已完成
+            print(f'[已完成]    {course["location"]}')
+    i += 1
+
+print(f"""
+***************************************************
+Finish!!
+Total counts:
+way1: {way1Succeed} succeeded, {way1Failed} failed
+way2: {way2Succeed} succeeded, {way2Failed} failed
+**********  Created By Avenshy & SSmJaE  **********""")
 input("Press any key to exit...")
