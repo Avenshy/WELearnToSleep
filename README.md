@@ -17,6 +17,10 @@ WELearn一键完成课程
 
 ## 更新日志
 
+### `v0.3dev`
+* 更pythonic（感谢[@SSmJaE](https://github.com/SSmJaE) 大佬）
+* 支持学习指定单元了
+
 ### `v0.2dev`
 * 支持更多课程
 * 优化代码
