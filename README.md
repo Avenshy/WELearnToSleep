@@ -7,7 +7,7 @@ WELearn一键完成课程
 * 正确率显示为100%
 * 已完成的章节会自动跳过
 
-**PS:本软件只完成课程，不会做题，如需做题请尝试显示答案的脚本食用**  
+**PS:本软件只完成课程，不会做题，如需做题请食用脚本：[WELearn网课助手](https://greasyfork.org/zh-CN/scripts/398601-welearn%E7%BD%91%E8%AF%BE%E5%8A%A9%E6%89%8B)**   
 **如需增加学习时长，请使用[WELearnToSleeep(WeLearn刷学习时长)](https://github.com/Avenshy/WELearnToSleeep)**  
 
 ![image](https://raw.githubusercontent.com/Avenshy/WELearnToSleep/master/preview1.png)
