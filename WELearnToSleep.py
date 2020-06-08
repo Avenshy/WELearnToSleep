@@ -57,7 +57,7 @@ while True:
     back = response.json()['info']
 
     # 选择单元 直接复制了WELearnToSleeep的代码
-    print('\n\n[NO. 0]  按顺序刷全部单元学习时长')
+    print('\n\n[NO. 0]  按顺序完成全部单元课程')
     i = 0
     unitsnum = len(back)
     for x in back:
