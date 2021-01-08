@@ -11,9 +11,9 @@ WELearn一键完成课程
 **如需逐个章节完成课程，请食用脚本: [WELearn一键完成课程](https://github.com/Avenshy/WELearnToSleep-JavaScript)**  
 **如需增加学习时长，请食用: [WELearnToSleeep(WeLearn刷学习时长)](https://github.com/Avenshy/WELearnToSleeep)**  
 
-![image](https://raw.githubusercontent.com/Avenshy/WELearnToSleep/master/preview1.png)
-![image](https://raw.githubusercontent.com/Avenshy/WELearnToSleep/master/preview2.png)
-![image](https://raw.githubusercontent.com/Avenshy/WELearnToSleep/master/preview3.png)
+![image](./docs/pictures/preview1.png)
+![image](./docs/pictures/preview2.png)
+![image](./docs/pictures/preview3.png)
 
 
 ## 更新日志
